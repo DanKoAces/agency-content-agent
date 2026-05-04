@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agency Content Agent</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;padding:20px;color:#333;font-size:15px}
+.app{max-width:780px;margin:0 auto}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.sub{font-size:13px;color:#666;margin-bottom:20px}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px;margin-bottom:16px}
+.lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+select,input{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;direction:rtl;background:#fff;color:#333;margin-bottom:8px}
+button{padding:10px 16px;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-size:14px;background:#fff;color:#333}
+button:hover{background:#f0f0f0}
+button:disabled{opacity:.5;cursor:not-allowed}
+.bp{background:#1a73e8;color:#fff;border-color:#1a73e8;width:100%;font-size:15px;padding:13px}
+.bp:hover{background:#1557b0}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.st{background:#f8f8f8;border-radius:8px;padding:12px}
+.sl{font-size:11px;color:#999;margin-bottom:4px}
+.sv{font-size:22px;font-weight:600}
+.op{background:#f8f8f8;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px}
+.br{background:#fce8e6;color:#c5221f}.ba{background:#fef7e0;color:#b45309}.bg{background:#e6f4ea;color:#188038}
+.pv{font-size:14px;line-height:1.8;background:#f8f8f8;border-radius:8px;padding:14px;max-height:450px;overflow-y:auto;direction:rtl;white-space:pre-wrap}
+.status{font-size:14px;margin-top:10px;min-height:20px;color:#666;text-align:center;padding:8px;border-radius:6px}
+.err{color:#c5221f;background:#fce8e6}
+.ok{color:#188038;background:#e6f4ea}
+.loading{color:#1a73e8;background:#e8f0fe}
+.sb{display:flex;gap:8px;align-items:center;margin-bottom:20px}
+.stp{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.dn{background:#e6f4ea;color:#188038}.ac{background:#1a73e8;color:#fff}.pe{background:#f1f1f1;color:#999}
+.sl2{flex:1;height:1px;background:#e0e0e0}
+.hidden{display:none}
+.lnk{color:#1a73e8;font-size:13px;display:block;margin-top:8px;text-decoration:underline}
+.b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.prog{width:100%;height:6px;background:#e0e0e0;border-radius:3px;margin-top:10px;overflow:hidden}
+.prog-bar{height:100%;background:#1a73e8;border-radius:3px;transition:width .5s;width:0}
+.setup-box{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:16px;margin-bottom:16px}
+.setup-box h3{font-size:14px;font-weight:600;margin-bottom:12px;color:#856404}
+.setup-box input{margin-bottom:6px;font-size:13px;direction:ltr}
+.setup-box label{font-size:12px;color:#666;display:block;margin-bottom:2px;direction:rtl}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Agency Content Agent</h1>
+<p class="sub">בחר לקוח ← לחץ כפתור ← פוסט נכתב ונשמר ב-Drive</p>
+
+<!-- Setup box — מוסתר אחרי ההגדרה הראשונה -->
+<div class="setup-box" id="setupBox">
+  <h3>🔑 הגדרה ראשונית — מזינים פעם אחת בלבד</h3>
+  <label>Anthropic API Key</label>
+  <input type="password" id="inp_ant" placeholder="sk-ant-api03-...">
+  <label>Google Refresh Token</label>
+  <input type="password" id="inp_rt" placeholder="1//04AR7...">
+  <label>Google Client ID</label>
+  <input type="text" id="inp_cid" placeholder="133951...apps.googleusercontent.com">
+  <label>Google Client Secret</label>
+  <input type="password" id="inp_cs" placeholder="GOCSPX-...">
+  <label>Drive Folder ID</label>
+  <input type="text" id="inp_fld" placeholder="1H331o6i-...">
+  <br>
+  <button class="bp" onclick="saveSetup()">שמור הגדרות ← התחל להשתמש</button>
+  <div class="status" id="setupSt"></div>
+</div>
+
+<div class="sb">
+<div class="stp ac" id="s1">1</div><div class="sl2"></div>
+<div class="stp pe" id="s2">2</div><div class="sl2"></div>
+<div class="stp pe" id="s3">3</div>
+</div>
+
+<div class="card">
+<div class="lbl">בחר לקוח</div>
+<select id="cl" onchange="onClient()">
+<option value="">-- בחר לקוח --</option>
+<option value="https://www.cover.co.il/|שירותים פיננסיים|finance">www.cover.co.il</option>
+<option value="https://www.dubnovgallery.co.il/|אולם אירועים תל אביב|events">www.dubnovgallery.co.il</option>
+<option value="https://www.highand.co.il/|אולם אירועים תל אביב|events">www.highand.co.il</option>
+<option value="https://www.riverside.co.il/|אולם אירועים תל אביב|events">www.riverside.co.il</option>
+<option value="https://www.lawrence.co.il/|אולם אירועים תל אביב|events">www.lawrence.co.il</option>
+<option value="https://www.dreamzone.co.il/|מתחם אירועים|events">www.dreamzone.co.il</option>
+<option value="https://surmom.co.il/|אמהות ותינוקות|parenting">surmom.co.il</option>
+<option value="https://www.bubybloom.co.il/|תינוקות וילדים|parenting">www.bubybloom.co.il</option>
+<option value="https://www.gotawatch.com/|שעונים ואקססוריז|retail">www.gotawatch.com</option>
+<option value="https://www.landers.co.il/|נדלן ומשרדים|realestate">www.landers.co.il</option>
+<option value="https://www.stork-service.com/|שירותי אחסנה ולוגיסטיקה|logistics">www.stork-service.com</option>
+<option value="https://www.soragdoor.com/|סורגים ואבטחה|security">www.soragdoor.com</option>
+<option value="https://www.niskoelec.com/|חשמלאים ותשתיות|electrical">www.niskoelec.com</option>
+<option value="https://www.ranshapira.co.il/|יועץ עסקי|consulting">www.ranshapira.co.il</option>
+<option value="https://www.mivoleti.co.il/|שירותי מוטב|services">www.mivoleti.co.il</option>
+<option value="https://www.mivoleti.com/|שירותי מוטב|services">www.mivoleti.com</option>
+<option value="https://tlv2go.com/|תיירות ומסעדות תל אביב|tourism">tlv2go.com</option>
+<option value="https://www.uriel-shay.com/|אמנות ועיצוב|art">www.uriel-shay.com</option>
+<option value="https://www.adrtrading.co.il/|יבוא ומסחר|trade">www.adrtrading.co.il</option>
+</select>
+<div style="margin-bottom:8px">
+  <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">אורך פוסט</label>
+  <select id="len">
+    <option value="800">800 מילים</option>
+    <option value="600">600 מילים</option>
+    <option value="1200">1200 מילים</option>
+  </select>
+</div>
+<button class="bp" id="mainBtn" onclick="runAll()" disabled>⚡ שלוף SC + כתוב פוסט + שמור Drive</button>
+<div class="prog hidden" id="prog"><div class="prog-bar" id="progBar"></div></div>
+<div class="status" id="st1"></div>
+</div>
+
+<div class="card hidden" id="c2">
+<div class="lbl">נתוני Search Console</div>
+<div class="sg" id="stats"></div>
+<div style="font-size:13px;color:#666;margin-bottom:6px">הזדמנויות CTR נמוך:</div>
+<div id="opps"></div>
+</div>
+
+<div class="card hidden" id="c3">
+<div class="lbl">פוסט מוכן ✓</div>
+<div id="post-out"></div>
+<div class="b2">
+  <button onclick="copyPost()">העתק פוסט</button>
+  <button onclick="resetAll()">לקוח חדש</button>
+</div>
+<div class="status" id="st3"></div>
+<div id="dlinks"></div>
+</div>
+</div>
+
+<script>
+var CTX={
+  events:['עונת חתונות שיא','זוגות שדחו אירועים'],
+  finance:['ריבית מתייצבת — זמן לתכנון'],
+  parenting:['קיץ — פעילויות לילדים'],
+  tourism:['תיירות פנים גואה'],
+  retail:['קניות קיץ'],
+  logistics:['גידול בסחר'],
+  realestate:['שוק נדלן — שינויי ריבית'],
+  art:['עונת תרבות'],
+  security:['מודעות ביטחונית גבוהה'],
+  electrical:['בנייה ושיפוץ בקיץ'],
+  consulting:['עסקים מתאוששים'],
+  trade:['יבוא מתאושש'],
+  services:['שגרה חוזרת'],
+  default:['קיץ 2026']
+};
+var BASE=['קיץ 2026 עונת שיא','חזרה לשגרה ולפנאי','אינפלציה מתייצבת'];
+var tok='',scData=null,postTxt='',postTitle='';
+
+function getCfg(){return JSON.parse(localStorage.getItem('aca_cfg')||'{}');}
+
+function saveSetup(){
+  var cfg={
+    ant:document.getElementById('inp_ant').value.trim(),
+    rt:document.getElementById('inp_rt').value.trim(),
+    cid:document.getElementById('inp_cid').value.trim(),
+    cs:document.getElementById('inp_cs').value.trim(),
+    fld:document.getElementById('inp_fld').value.trim()
+  };
+  if(!cfg.ant||!cfg.rt||!cfg.cid||!cfg.cs||!cfg.fld){
+    document.getElementById('setupSt').textContent='יש למלא את כל השדות';
+    document.getElementById('setupSt').className='status err';
+    return;
+  }
+  localStorage.setItem('aca_cfg',JSON.stringify(cfg));
+  document.getElementById('setupBox').classList.add('hidden');
+  document.getElementById('setupSt').textContent='';
+  alert('הגדרות נשמרו! מעכשיו לא צריך להזין שוב.');
+}
+
+function ss(n){for(var i=1;i<=3;i++){var e=document.getElementById('s'+i);e.className='stp '+(i<n?'dn':i===n?'ac':'pe');}}
+function fm(n){return n>=1000?(n/1000).toFixed(1)+'K':String(Math.round(n));}
+function setSt(id,msg,cls){var e=document.getElementById(id);e.textContent=msg;e.className='status '+(cls||'');}
+function setP(p){document.getElementById('progBar').style.width=p+'%';}
+function onClient(){document.getElementById('mainBtn').disabled=!document.getElementById('cl').value;}
+
+async function getToken(){
+  var cfg=getCfg();
+  var r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'client_id='+cfg.cid+'&client_secret='+cfg.cs+'&refresh_token='+cfg.rt+'&grant_type=refresh_token'});
+  var d=await r.json();
+  if(!d.access_token)throw new Error(d.error_description||'Token error');
+  tok=d.access_token;
+}
+
+async function runAll(){
+  var cfg=getCfg();
+  if(!cfg.ant){alert('יש להגדיר את ה-API keys תחילה');document.getElementById('setupBox').classList.remove('hidden');return;}
+  var v=document.getElementById('cl').value,parts=v.split('|'),site=parts[0],niche=parts[1],type=parts[2];
+  var len=document.getElementById('len').value;
+  var btn=document.getElementById('mainBtn');
+  btn.disabled=true;
+  document.getElementById('prog').classList.remove('hidden');
+  document.getElementById('c2').classList.add('hidden');
+  document.getElementById('c3').classList.add('hidden');
+  try{
+    setSt('st1','מתחבר ל-Google...','loading');setP(10);
+    await getToken();
+    setSt('st1','שולף Search Console...','loading');setP(25);
+    var today=new Date(),end=today.toISOString().split('T')[0],start=new Date(today-90*864e5).toISOString().split('T')[0];
+    var sc=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({startDate:start,endDate:end,dimensions:['query'],rowLimit:50,orderBy:[{fieldName:'impressions',sortOrder:'DESCENDING'}]})});
+    var sd=await sc.json();
+    if(sd.error)throw new Error(sd.error.message);
+    scData=sd.rows||[];
+    renderSC(scData);ss(2);
+    setSt('st1','Claude כותב פוסט...','loading');setP(55);
+    var tq=scData.slice(0,10).map(function(r){return r.keys[0]+' ('+fm(r.impressions)+' חשיפות, '+(r.ctr*100).toFixed(1)+'% CTR)';}).join('\n');
+    var opps=scData.filter(function(r){return r.impressions>=50&&r.ctr<0.05;}).slice(0,6).map(function(r){return r.keys[0];}).join(', ');
+    var cx=BASE.concat(CTX[type]||CTX.default).join(' · ');
+    var prompt='כותב SEO מקצועי בעברית.\n\nלקוח: '+site+'\nתחום: '+niche+'\nטון: מקצועי וישיר\nאורך: '+len+' מילים\n\nהקשר עכשווי: '+cx+'\n\nשאילתות Search Console:\n'+tq+'\n\nהזדמנויות קישורים פנימיים: '+opps+'\n\nכתוב '+len+' מילים, H2, קישורים [טקסט](URL), ובסוף:\n**כותרת SEO:** ...\n**תיאור מטא:** ...\n**מילות מפתח:** ...\n\nישירות ללא הקדמה.';
+    var cr=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.ant,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
+    var cd=await cr.json();
+    if(cd.error)throw new Error(cd.error.message||JSON.stringify(cd.error));
+    postTxt=cd.content[0].text;
+    var fl=postTxt.split('\n').filter(function(l){return l.trim().length>0;})[0]||'פוסט SEO';
+    postTitle=fl.replace(/^#+\s*/,'').replace(/\*\*/g,'').trim().substring(0,100);
+    setSt('st1','שומר ב-Google Drive...','loading');setP(80);
+    var clean=postTxt.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/\*\*(.*?)\*\*/g,'$1').replace(/^#+\s*/gm,'');
+    var bd='-------314159265358979323846',me=JSON.stringify({title:postTitle,mimeType:'application/vnd.google-apps.document',parents:[{id:cfg.fld}]}),body='--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+me+'\r\n--'+bd+'\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n'+clean+'\r\n--'+bd+'--';
+    var dr=await fetch('https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&convert=true',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'multipart/related; boundary="'+bd+'"'},body:body});
+    var dd=await dr.json();
+    if(!dd.id)throw new Error('Drive: '+JSON.stringify(dd).substring(0,100));
+    setP(100);
+    setSt('st1','✓ הושלם! פוסט נשמר ב-Drive','ok');
+    renderPost();
+    document.getElementById('dlinks').innerHTML='<a class="lnk" href="https://docs.google.com/document/d/'+dd.id+'/edit" target="_blank">פתח ב-Google Docs</a><a class="lnk" href="https://drive.google.com/drive/folders/'+cfg.fld+'" target="_blank">פתח את התיקייה</a>';
+    ss(3);
+  }catch(e){setSt('st1','שגיאה: '+e.message,'err');btn.disabled=false;}
+}
+
+function renderSC(rows){
+  var tc=rows.reduce(function(s,r){return s+r.clicks;},0),ti=rows.reduce(function(s,r){return s+r.impressions;},0),ap=(rows.reduce(function(s,r){return s+r.position;},0)/rows.length).toFixed(1);
+  document.getElementById('stats').innerHTML='<div class="st"><div class="sl">קליקים (90 יום)</div><div class="sv">'+fm(tc)+'</div></div><div class="st"><div class="sl">חשיפות</div><div class="sv">'+fm(ti)+'</div></div><div class="st"><div class="sl">דירוג ממוצע</div><div class="sv">'+ap+'</div></div>';
+  var op=rows.filter(function(r){return r.impressions>=50&&r.ctr<0.05;}).slice(0,5);
+  document.getElementById('opps').innerHTML=op.map(function(r){var c=(r.ctr*100).toFixed(1);var b=r.ctr<0.02?'<span class="badge br">'+c+'%</span>':r.ctr<0.04?'<span class="badge ba">'+c+'%</span>':'<span class="badge bg">'+c+'%</span>';return'<div class="op"><div><strong>'+r.keys[0]+'</strong><div style="font-size:12px;color:#999">'+fm(r.impressions)+' חשיפות · דירוג '+r.position.toFixed(1)+'</div></div>'+b+'</div>';}).join('');
+  document.getElementById('c2').classList.remove('hidden');
+}
+
+function renderPost(){
+  var html=postTxt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^## (.+)$/gm,'<h3 style="font-size:15px;font-weight:600;margin:12px 0 4px">$1</h3>').replace(/^# (.+)$/gm,'<h2 style="font-size:18px;font-weight:700;margin:8px 0 12px">$1</h2>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" style="color:#1a73e8">$1</a>').replace(/\n/g,'<br>');
+  document.getElementById('post-out').innerHTML='<div class="pv">'+html+'</div>';
+  document.getElementById('c3').classList.remove('hidden');
+  document.getElementById('c3').scrollIntoView({behavior:'smooth'});
+}
+
+function copyPost(){navigator.clipboard.writeText(postTxt);var b=event.target;b.textContent='הועתק!';setTimeout(function(){b.textContent='העתק פוסט';},2000);}
+function resetAll(){scData=null;postTxt='';postTitle='';['c2','c3'].forEach(function(id){document.getElementById(id).classList.add('hidden');});document.getElementById('st1').textContent='';document.getElementById('st1').className='status';document.getElementById('cl').value='';document.getElementById('mainBtn').disabled=true;document.getElementById('prog').classList.add('hidden');document.getElementById('progBar').style.width='0';document.getElementById('dlinks').innerHTML='';ss(1);}
+
+// בדוק אם כבר מוגדר
+window.onload=function(){var cfg=getCfg();if(cfg.ant)document.getElementById('setupBox').classList.add('hidden');}
+</script>
+</body>
+</html>
