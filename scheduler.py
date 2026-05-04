@@ -1,19 +1,10 @@
-import schedule, time, datetime
-import pytz
+import schedule,time,datetime,pytz
 from agent import run_agent
-
-TZ = pytz.timezone("Asia/Jerusalem")
-
+TZ=pytz.timezone("Asia/Jerusalem")
 def job():
-    print(f"[{datetime.datetime.now(TZ).strftime('%Y-%m-%d %H:%M %Z')}] Running agent...")
-    run_agent()
-
-print("Agency Content Agent Scheduler started")
-print("Runs every night at 02:00 Israel time")
-job()  # run once on startup
-
+  print(f"[{datetime.datetime.now(TZ).strftime('%Y-%m-%d %H:%M')}] Running...")
+  run_agent()
+print("Scheduler started - runs at 02:00 Israel time")
+job()
 schedule.every().day.at("02:00").do(job)
-
-while True:
-    schedule.run_pending()
-    time.sleep(60)
+while True:schedule.run_pending();time.sleep(60)
