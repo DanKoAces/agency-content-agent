@@ -28,6 +28,15 @@ CLIENTS=[
   {"site":"https://www.adrtrading.co.il/","niche":"יבוא ומסחר"},
 ]
 
+WRITING_RULES = """כללי כתיבה חובה:
+- עברית תקנית, ישירה ושוטפת. לא תרגום מאנגלית.
+- אסור בהחלט להשתמש בסימן — (מקף ארוך) בשום מקום.
+- משפטים קצרים וברורים.
+- לא לכתוב ביטויים מתורגמים כמו: תשאלו לראות, לפגוש צוות, להכיר את הטים.
+- במקום זאת: בקשו לראות, הכירו את הצוות, צרו קשר.
+- לא להתחיל משפטים במילה "אתם" כדרך פנייה ישירה מוגזמת.
+- 800 מילים בדיוק."""
+
 def get_token():
   r=requests.post("https://oauth2.googleapis.com/token",data={"client_id":CID,"client_secret":CS,"refresh_token":RT,"grant_type":"refresh_token"})
   d=r.json()
@@ -49,11 +58,39 @@ def write_post(client,rows):
   c=anthropic.Anthropic(api_key=AK)
   tq="\n".join([f"{r[\'keys\'][0]} ({round(r[\'impressions\'])} חשיפות, {r[\'ctr\']*100:.1f}% CTR)" for r in rows[:10]])
   lnk=", ".join([r["keys"][0] for r in rows if r.get("impressions",0)>=50 and r.get("ctr",1)<0.05][:6])
+
   tm=c.messages.create(model="claude-sonnet-4-20250514",max_tokens=80,
-    messages=[{"role":"user","content":f"נושא בלוג SEO אחד לתחום {client[\'niche\']}. שאילתות: {\',\'.join([r[\'keys\'][0] for r in rows[:5]])}. נושא אחד בלבד."}])
+    messages=[{"role":"user","content":f"נושא בלוג SEO אחד לתחום {client[\'niche\']}. שאילתות: {\',\'.join([r[\'keys\'][0] for r in rows[:5]])}. נושא אחד בלבד ללא הסבר."}])
   topic=tm.content[0].text.strip()
-  m=c.messages.create(model="claude-sonnet-4-20250514",max_tokens=2000,
-    messages=[{"role":"user","content":f"כותב SEO מקצועי בעברית.\nלקוח: {client[\'site\']}\nתחום: {client[\'niche\']}\nנושא: {topic}\nקיץ 2026 חזרה לשגרה\nשאילתות:\n{tq}\nקישורים: {lnk}\n\nכתוב 800 מילים, H2, קישורים [טקסט](URL), ובסוף:\n**כותרת SEO:** ...\n**תיאור מטא:** ...\n**מילות מפתח:** ...\n\nישירות."}])
+
+  prompt=f"""כותב תוכן שיווקי בכיר בעברית תקנית.
+
+{WRITING_RULES}
+
+לקוח: {client[\'site\']}
+תחום: {client[\'niche\']}
+נושא: {topic}
+הקשר עכשווי: קיץ 2026, חזרה לשגרה, עונת חתונות
+
+שאילתות Search Console:
+{tq}
+
+הזדמנויות לקישורים פנימיים: {lnk}
+
+מבנה:
+- כותרת H1
+- 5 כותרות H2
+- 800 מילים
+- קישורים פנימיים בפורמט [טקסט](URL)
+- בסוף בלבד:
+**כותרת SEO:** ...
+**תיאור מטא:** ...
+**מילות מפתח:** ...
+
+כתוב ישירות ללא הקדמה."""
+
+  m=c.messages.create(model="claude-sonnet-4-20250514",max_tokens=2500,
+    messages=[{"role":"user","content":prompt}])
   return topic,m.content[0].text.strip()
 
 def save_drive(token,title,content):
@@ -81,7 +118,7 @@ def run_agent():
       if not rows:print("  no data");continue
       print(f"  {len(rows)} queries")
       topic,post=write_post(client,rows)
-      print(f"  topic: {topic[:50]}")
+      print(f"  topic: {topic[:60]}")
       doc=save_drive(token,topic,post)
       print(f"  saved: {doc.get(\'id\')}")
       results.append({"site":client["site"],"topic":topic})
