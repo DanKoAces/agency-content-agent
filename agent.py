@@ -16,15 +16,15 @@ CLIENTS=[
   {"site":"https://surmom.co.il/","niche":"אמהות ותינוקות"},
   {"site":"https://www.bubybloom.co.il/","niche":"תינוקות וילדים"},
   {"site":"https://www.gotawatch.com/","niche":"שעונים ואקססוריז"},
-  {"site":"https://www.landers.co.il/","niche":"נדלן ומשרדים"},
-  {"site":"https://www.stork-service.com/","niche":"שירותי אחסנה"},
+  {"site":"https://www.landers.co.il/","niche":"מקררים קטנים ומקררי יין"},
+  {"site":"https://www.stork-service.com/","niche":"פונדקאות ותרומת ביציות"},
   {"site":"https://www.soragdoor.com/","niche":"סורגים ואבטחה"},
   {"site":"https://www.niskoelec.com/","niche":"חשמלאים ותשתיות"},
   {"site":"https://www.ranshapira.co.il/","niche":"יועץ עסקי"},
   {"site":"https://www.mivoleti.co.il/","niche":"שירותי מוטב"},
   {"site":"https://www.mivoleti.com/","niche":"שירותי מוטב"},
   {"site":"https://tlv2go.com/","niche":"תיירות ומסעדות תל אביב"},
-  {"site":"https://www.uriel-shay.com/","niche":"אמנות ועיצוב"},
+  {"site":"https://www.uriel-shay.com/","niche":"ציוד חשמל וכלי עבודה"},
   {"site":"https://www.adrtrading.co.il/","niche":"יבוא ומסחר"},
 ]
 
