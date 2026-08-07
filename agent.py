@@ -17,7 +17,7 @@ CLIENTS=[
   {"site":"https://www.bubybloom.co.il/","niche":"תינוקות וילדים"},
   {"site":"https://www.gotawatch.com/","niche":"שעונים ואקססוריז"},
   {"site":"https://www.landers.co.il/","niche":"מקררים קטנים ומקררי יין"},
-  {"site":"https://www.stork-service.com/","niche":"פונדקאות ותרומת ביציות"},
+  {"site":"https://stork-service.com/","sc":"sc-domain:stork-service.com","niche":"פונדקאות ותרומת ביציות"},
   {"site":"https://www.soragdoor.com/","niche":"סורגים ואבטחה"},
   {"site":"https://www.niskoelec.com/","niche":"חשמלאים ותשתיות"},
   {"site":"https://www.ranshapira.co.il/","niche":"יועץ עסקי"},
@@ -130,7 +130,7 @@ def run_agent():
         domain = client["site"].replace("https://", "").rstrip("/")
         print("Processing: " + domain)
         try:
-            rows = fetch_sc(token, client["site"])
+            rows = fetch_sc(token, client.get("sc") or client["site"])
             if not rows:
                 print("  no data")
                 continue

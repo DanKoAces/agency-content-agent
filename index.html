@@ -88,7 +88,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <option value="https://www.bubybloom.co.il/|תינוקות וילדים|parenting">www.bubybloom.co.il</option>
 <option value="https://www.gotawatch.com/|שעונים ואקססוריז|retail">www.gotawatch.com</option>
 <option value="https://www.landers.co.il/|מקררים קטנים ומקררי יין|retail">www.landers.co.il</option>
-<option value="https://www.stork-service.com/|פונדקאות ותרומת ביציות|services">www.stork-service.com</option>
+<option value="https://stork-service.com/|פונדקאות ותרומת ביציות|services|sc-domain:stork-service.com">stork-service.com</option>
 <option value="https://www.soragdoor.com/|סורגים ואבטחה|security">www.soragdoor.com</option>
 <option value="https://www.niskoelec.com/|חשמלאים ותשתיות|electrical">www.niskoelec.com</option>
 <option value="https://www.ranshapira.co.il/|יועץ עסקי|consulting">www.ranshapira.co.il</option>
@@ -188,7 +188,7 @@ async function getToken(){
 async function runAll(){
   var cfg=getCfg();
   if(!cfg.ant){alert('יש להגדיר את ה-API keys תחילה');document.getElementById('setupBox').classList.remove('hidden');return;}
-  var v=document.getElementById('cl').value,parts=v.split('|'),site=parts[0],niche=parts[1],type=parts[2];
+  var v=document.getElementById('cl').value,parts=v.split('|'),site=parts[0],niche=parts[1],type=parts[2],scp=parts[3]||site;
   var len=document.getElementById('len').value;
   var btn=document.getElementById('mainBtn');
   btn.disabled=true;
@@ -200,7 +200,7 @@ async function runAll(){
     await getToken();
     setSt('st1','שולף Search Console...','loading');setP(25);
     var today=new Date(),end=today.toISOString().split('T')[0],start=new Date(today-90*864e5).toISOString().split('T')[0];
-    var sc=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({startDate:start,endDate:end,dimensions:['query'],rowLimit:50,orderBy:[{fieldName:'impressions',sortOrder:'DESCENDING'}]})});
+    var sc=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(scp)+'/searchAnalytics/query',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({startDate:start,endDate:end,dimensions:['query'],rowLimit:50,orderBy:[{fieldName:'impressions',sortOrder:'DESCENDING'}]})});
     var sd=await sc.json();
     if(sd.error)throw new Error(sd.error.message);
     scData=sd.rows||[];
