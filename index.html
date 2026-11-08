@@ -145,9 +145,9 @@ var CTX={
   consulting:['עסקים מתאוששים'],
   trade:['יבוא מתאושש'],
   services:['שגרה חוזרת'],
-  default:['קיץ 2026']
+  default:['נובמבר 2026']
 };
-var BASE=['קיץ 2026 עונת שיא','חזרה לשגרה ולפנאי','אינפלציה מתייצבת'];
+var BASE=['נובמבר 2026 סוף השנה','עונת המבצעים','לקראת החגים'];
 var tok='',scData=null,postTxt='',postTitle='';
 
 function getCfg(){return JSON.parse(localStorage.getItem('aca_cfg')||'{}');}
@@ -209,7 +209,7 @@ async function runAll(){
     var tq=scData.slice(0,10).map(function(r){return r.keys[0]+' ('+fm(r.impressions)+' חשיפות, '+(r.ctr*100).toFixed(1)+'% CTR)';}).join('\n');
     var opps=scData.filter(function(r){return r.impressions>=50&&r.ctr<0.05;}).slice(0,6).map(function(r){return r.keys[0];}).join(', ');
     var cx=BASE.concat(CTX[type]||CTX.default).join(' · ');
-    var prompt='כותב SEO מקצועי בעברית.\n\nלקוח: '+site+'\nתחום: '+niche+'\nטון: מקצועי וישיר\nאורך: '+len+' מילים\n\nהקשר עכשווי: '+cx+'\n\nשאילתות Search Console:\n'+tq+'\n\nהזדמנויות קישורים פנימיים: '+opps+'\n\nכתוב '+len+' מילים, H2, קישורים [טקסט](URL), ובסוף:\n**כותרת SEO:** ...\n**תיאור מטא:** ...\n**מילות מפתח:** ...\n\nישירות ללא הקדמה.';
+    var prompt='כותב SEO מקצועי בעברית ישראלית טבעית.\n\nלקוח: '+site+'\nתחום: '+niche+'\nטון: מקצועי, ישיר ומדובר\nאורך: '+len+' מילים\n\nכללי כתיבה: עברית ישראלית טבעית כאילו נכתבה מאפס, לא תרגום מאנגלית (לא רק מילים אלא גם מבנה משפט: בלי פתיחות אוגד X הוא/היא Y, שאלת מחיר עם כמה ולא מה, בלי כסף פרסום/תמונה מלאה). משפטים קצרים ומדוברים. אסור מקף ארוך. אסור מהווה/משמש/הינו/לייצר(מופשט)/בעידן הדיגיטלי/חשוב לציין.\n\nסמכות מותג בעידן חיפוש ה-AI (Google Gemini era of Search): עזרה אמיתית קודם, ללמד לא להכריז; עומק וספציפיות מנצחים תוכן גנרי (לענות על השאלה המדויקת עם פרטים ומספרים, לא הכול על X); לסיים בשאלות ותשובות אמיתיות.\n\nהקשר עכשווי: '+cx+'\n\nשאילתות Search Console:\n'+tq+'\n\nהזדמנויות קישורים פנימיים: '+opps+'\n\nכתוב '+len+' מילים, H2, שאלות ותשובות (3 שאלות המשך אמיתיות), קישורים [טקסט](URL), ובסוף:\n**כותרת SEO:** ...\n**תיאור מטא:** ...\n**מילות מפתח:** ...\n\nישירות ללא הקדמה.';
     var cr=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.ant,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
     var cd=await cr.json();
     if(cd.error)throw new Error(cd.error.message||JSON.stringify(cd.error));
